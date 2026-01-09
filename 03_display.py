@@ -51,7 +51,7 @@ class Display:
             [1, 1, 0, 1, 1, 0, 1],
             [1, 1, 1, 1, 0, 0, 1],
             [0, 1, 1, 0, 0, 1, 1],
-            [1, 1, 1, 1, 0, 1, 1],
+            [1, 0, 1, 1, 0, 1, 1],
             [1, 0, 1, 1, 1, 1, 1],
             [1, 1, 1, 0, 0, 0, 0],
             [1, 1, 1, 1, 1, 1, 1],
@@ -86,14 +86,14 @@ while 1:
         count += 1
         print(count)
 
-        display.select_right(0)
-        display.select_left(1)
-        # display.write(display.NUMBERS[count % 10])
-        display.write(display.NUMBERS[1])
-        pyb.delay(1000)
-
         display.select_right(1)
         display.select_left(0)
-        # display.write(display.NUMBERS[count // 10 % 10])
-        display.write(display.NUMBERS[2])
-        pyb.delay(1000)
+        display.write(display.NUMBERS[count % 10])
+        # display.write(display.NUMBERS[1])
+        pyb.delay(500)
+
+        display.select_right(0)
+        display.select_left(1)
+        display.write(display.NUMBERS[count // 10 % 10])
+        # display.write(display.NUMBERS[2])
+        pyb.delay(500)

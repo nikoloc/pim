@@ -45,7 +45,7 @@ class Display:
             pyb.Pin("PB3", pyb.Pin.OUT_PP),
         ]
 
-        self.NUMBERS = [
+        self.DIGITS = [
             [1, 1, 1, 1, 1, 1, 0],
             [0, 1, 1, 0, 0, 0, 0],
             [1, 1, 0, 1, 1, 0, 1],
@@ -58,42 +58,50 @@ class Display:
             [1, 1, 1, 1, 0, 1, 1],
         ]
 
-    def select_left(self, value):
-        self.left_select.value(not value)
+        self.CLEAR = [0 for _ in range(0, 7)]
 
-    def select_right(self, value):
-        self.right_select.value(not value)
-
-    def toggle_left(self):
-        self.left_select.value(not self.left_select.value())
-
-    def toggle_right(self):
-        self.right_select.value(not self.right_select.value())
-
-    def write(self, values):
+    def _write(self, values):
         for index, value in enumerate(values):
             self.segments[index].value(not value)
 
+    def write(self, value, leading_zero=True):
+        left_digit = value // 10 % 10
+        right_digit = value % 10
 
-button_1 = Button("PC9")
-button_2 = Button("PC8")
+        left_value = (
+            self.CLEAR
+            if not leading_zero and left_digit == 0
+            else self.DIGITS[left_digit]
+        )
+        right_value = self.DIGITS[right_digit]
+
+        display.right_select.value(1)
+        display.left_select.value(0)
+        self._write(left_value)
+
+        pyb.delay(5)
+
+        display.left_select.value(1)
+        display.right_select.value(0)
+        self._write(right_value)
+
+        pyb.delay(5)
+
+
+button_inc = Button("PC9")
+button_dec = Button("PC8")
+
+button_reset = Button("PC13")
 
 display = Display()
 count = 0
 
 while 1:
-    if button_1.was_just_clicked():
+    if button_inc.was_just_clicked():
         count += 1
-        print(count)
+    elif button_dec.was_just_clicked():
+        count -= 1
+    elif button_reset.was_just_clicked():
+        count = 0
 
-        display.select_right(1)
-        display.select_left(0)
-        display.write(display.NUMBERS[count % 10])
-        # display.write(display.NUMBERS[1])
-        pyb.delay(500)
-
-        display.select_right(0)
-        display.select_left(1)
-        display.write(display.NUMBERS[count // 10 % 10])
-        # display.write(display.NUMBERS[2])
-        pyb.delay(500)
+    display.write(count, False)

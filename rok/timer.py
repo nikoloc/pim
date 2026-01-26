@@ -16,12 +16,62 @@ class Button(pyb.Pin):
         return ret
 
 
+class Display:
+    def __init__(self):
+        self.sel_left = pyb.Pin("PB6", mode=pyb.Pin.OUT)
+        self.sel_right = pyb.Pin("PC7", mode=pyb.Pin.OUT)
+
+        self.segments = [
+            pyb.Pin("PA10", mode=pyb.Pin.OUT),
+            pyb.Pin("PA9", mode=pyb.Pin.OUT),
+            pyb.Pin("PA8", mode=pyb.Pin.OUT),
+            pyb.Pin("PB10", mode=pyb.Pin.OUT),
+            pyb.Pin("PB5", mode=pyb.Pin.OUT),
+            pyb.Pin("PB4", mode=pyb.Pin.OUT),
+            pyb.Pin("PB3", mode=pyb.Pin.OUT),
+        ]
+
+        self.NUMBERS = [
+            [0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 1, 1, 1, 1],
+            [0, 0, 1, 0, 0, 1, 0],
+            [0, 0, 0, 0, 1, 1, 0],
+            [1, 0, 0, 1, 1, 0, 0],
+            [0, 1, 0, 0, 1, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0],
+        ]
+
+    def _write(self, states):
+        for index, state in enumerate(states):
+            # [1, 0, 0, 0, 1, 0, 1]
+            self.segments[index].value(state)
+
+    def write(self, number):
+        first_digit = int(number / 10) % 10
+        second_digit = number % 10
+
+        self.sel_right.value(1)
+        self.sel_left.value(0)
+
+        self._write(self.NUMBERS[first_digit])
+        pyb.delay(10)
+
+        self.sel_right.value(0)
+        self.sel_left.value(1)
+
+        self._write(self.NUMBERS[second_digit])
+        pyb.delay(10)
+
+
 MODE_PAUSED = 0
 MODE_RUNNING = 1
 MODE_ENDED = 2
 
 mode = MODE_PAUSED
-count = 0
+count = 10
 
 
 def timer_callback(timer):
@@ -44,6 +94,8 @@ user_button = Button("PC13")
 
 led_1 = pyb.Pin("PA11", mode=pyb.Pin.OUT)
 led_2 = pyb.Pin("PB15", mode=pyb.Pin.OUT)
+
+display = Display()
 
 timer = pyb.Timer(4)
 timer.init(period=1000, callback=timer_callback)
@@ -83,3 +135,5 @@ while 1:
             mode = MODE_PAUSED
             print("mode: paused")
             count = 10
+
+    display.write(count)
